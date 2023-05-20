@@ -1,0 +1,9 @@
+{
+    "C_Cpp.errorSquiggles": "enabled",
+    "files.associations": {
+        "directorios.h": "c",
+        "ficheros.h": "c",
+        "string.h": "c",
+        "simulacion.h": "c"
+    }
+}
