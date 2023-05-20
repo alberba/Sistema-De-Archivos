@@ -11,6 +11,7 @@ int main(int argc, char **argv){
         fprintf(stderr, "Error al montar el dispositivo virtual\n");
         return FALLO;
     }
+    
 
     int ninodo = reservar_inodo('f',6);
 
