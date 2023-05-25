@@ -3,7 +3,7 @@
 int main(int argc, char **argv){
     // Comprobamos sintaxis
     if(argc != 4){
-        fprintf(stderr, "Error de sintaxis\n");
+        fprintf(stderr, "Sintaxis: ./mi_mkdir <nombre_dispositivo> <permisos> </ruta_directorio/>\n");
         return FALLO;
     }
 
