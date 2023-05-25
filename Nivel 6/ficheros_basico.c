@@ -561,6 +561,10 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
     int indices[3]; 
     // Nº de bloques liberados
     int liberados = 0; 
+    // Contador de lecturas
+    unsigned int total_bwrites = 0;
+    // Contador de escrituras
+    unsigned int total_breads = 0;
 
     if ((inodo->tamEnBytesLog) == 0) {
         return 0; //el fichero está vacío
@@ -572,6 +576,9 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
     } else {
         ultimoBL = (inodo->tamEnBytesLog) / BLOCKSIZE;
     }
+
+    memset (bufAux_punteros, 0, BLOCKSIZE);
+    ptr = 0;
     
 #if DEBUG6
     printf("[liberar_bloques_inodo()-> primerBL: %d, ultimoBL: %d]\n", primerBL, ultimoBL);
@@ -599,6 +606,7 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
                 if (bread(ptr, bloques_punteros[nivel_punteros - 1]) == FALLO) {
                     return FALLO;
                 }
+                total_breads++;
             }
             
             ptr_nivel[nivel_punteros - 1] = ptr;
@@ -646,6 +654,7 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
                         if (bwrite(ptr, bloques_punteros[nivel_punteros - 1])==FALLO) {
                             return FALLO;//control de errores
                         }
+                        total_bwrites++;
 
                         // Hemos de salir del bucle ya que no será necesario liberar los bloques de niveles
                         // superiores de los que cuelga
@@ -659,7 +668,7 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
     }
 
 #if DEBUG6
-    printf("[liberar_bloques_inodo()-> total bloques liberados: %d]\n", liberados);
+    printf("[liberar_bloques_inodo()-> total bloques liberados: %d, total bwrites: %d, total breads: %d]\n", liberados, total_bwrites, total_breads);
 #endif
 
     // Devuelve los bloques liberados
