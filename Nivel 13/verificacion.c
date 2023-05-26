@@ -31,17 +31,18 @@ int main (int argc, char **argv) {
     fprintf(stderr, "numentradas: %i, NUMPROCESOS: %i\n", numEntradas, NUMPROCESOS);
 #endif
 
-    char informetxt[100];
-    sprintf(informetxt, "%s%s", argv[2], "informe.txt");
+    char rutaInformeTxt[33];
+    strcpy(rutaInformeTxt, argv[2]);
+    strcat(rutaInformeTxt, "informe.txt");
     
-    if (mi_creat(informetxt, 6) == FALLO) {
+    if (mi_creat(rutaInformeTxt, 6) == FALLO) {
         fprintf(stderr, "Error al crear el fichero informe.txt\n");
         return FALLO;
     }
     
     struct entrada entradas[numEntradas];
 
-    if (mi_read(argv[2], entradas, 0, sizeof(struct entrada) * NUMPROCESOS) == FALLO) {
+    if (mi_read(argv[2], entradas, 0, sizeof(struct entrada) * numEntradas) == FALLO) {
         fprintf(stderr, "Error de lectura de directorio\n");
     }
 
@@ -50,10 +51,13 @@ int main (int argc, char **argv) {
         // Se lee la entrada y se extrae el pid
         // y se guarda en un registro info
         struct INFORMACION info;
-        info.pid = atoi(strchr(entradas[nEntrada].nombre, '_') + 1);;
+        memset(&info, 0, sizeof(info));
+        info.pid = atoi(strchr(entradas[nEntrada].nombre, '_') + 1);
 
-        char ficheroPrueba[128];
-        sprintf(ficheroPrueba, "%s%s/%s", argv[2], entradas[nEntrada].nombre, "prueba.dat");
+        char ficheroPrueba[46];
+        strcpy(ficheroPrueba, argv[2]);
+        strcat(ficheroPrueba, entradas[nEntrada].nombre);
+        strcat(ficheroPrueba, "/prueba.dat");
 
         int cant_registros_buffer_escrituras = 256; 
         struct REGISTRO buffer_escrituras [cant_registros_buffer_escrituras];
@@ -72,7 +76,28 @@ int main (int argc, char **argv) {
                     info.PrimeraEscritura = buffer_escrituras[nRegistro];
                     info.UltimaEscritura = buffer_escrituras[nRegistro];
                 } else {
-                    // Comparar nº de escritura (para obtener primera y última, así como la mayor posición y la menor) y actualizarlas si es preciso
+
+                    //Actualizamos los datos de las fechas la primera y la última escritura si se necesita
+                    if ((difftime(buffer_escrituras[nRegistro].fecha, info.PrimeraEscritura.fecha)) <= 0 &&
+                        buffer_escrituras[nRegistro].nEscritura < info.PrimeraEscritura.nEscritura)
+                    {
+                        info.PrimeraEscritura = buffer_escrituras[nRegistro];
+                    }
+                    if ((difftime(buffer_escrituras[nRegistro].fecha, info.UltimaEscritura.fecha)) >= 0 &&
+                        buffer_escrituras[nRegistro].nEscritura > info.UltimaEscritura.nEscritura)
+                    {
+                        info.UltimaEscritura = buffer_escrituras[nRegistro];
+                    }
+                    if (buffer_escrituras[nRegistro].nRegistro < info.MenorPosicion.nRegistro)
+                    {
+                        info.MenorPosicion = buffer_escrituras[nRegistro];
+                    }
+                    if (buffer_escrituras[nRegistro].nRegistro > info.MayorPosicion.nRegistro)
+                    {
+                        info.MayorPosicion = buffer_escrituras[nRegistro];
+                    }
+
+                    /*// Comparar nº de escritura (para obtener primera y última, así como la mayor posición y la menor) y actualizarlas si es preciso
                     // Primera estructura
                     if (buffer_escrituras[nRegistro].nEscritura < info.PrimeraEscritura.nEscritura) {
                         info.PrimeraEscritura = buffer_escrituras[nRegistro];
@@ -88,10 +113,9 @@ int main (int argc, char **argv) {
                     // Menor posición
                     else if (buffer_escrituras[nRegistro].nRegistro < info.MenorPosicion.nRegistro) {
                         info.MenorPosicion = buffer_escrituras[nRegistro];
-                    }
-                    info.nEscrituras++;
+                    }*/
                 }
-                
+                info.nEscrituras++;
             }
             nRegistro++;
 
@@ -115,7 +139,7 @@ int main (int argc, char **argv) {
         sprintf(buffer, "Menor Posición\t%d\t%d\t%s", info.MenorPosicion.nEscritura, info.MenorPosicion.nRegistro, asctime(localtime(&info.MenorPosicion.fecha)));
         sprintf(buffer, "Mayor Posición\t%d\t%d\t%s", info.MayorPosicion.nEscritura, info.MayorPosicion.nRegistro, asctime(localtime(&info.MayorPosicion.fecha)));
         // Añadir la información del struct info al fichero informe.txt
-        if(nbytes_info += mi_write(informetxt, buffer, nbytes_info, BLOCKSIZE) == FALLO){
+        if(nbytes_info += mi_write(rutaInformeTxt, buffer, nbytes_info, BLOCKSIZE) == FALLO){
             fprintf(stderr, "Error de escritura en el fichero informe.txt\n");
             return FALLO;
         }
