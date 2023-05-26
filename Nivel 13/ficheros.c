@@ -134,11 +134,20 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
     int primerBloque, ultimoBloque, offsetInicio, offsetFinal, nbfisico;
     char unsigned buf_bloque[BLOCKSIZE];
     // Lectura del inodo para tener los datos en memoria
+    mi_waitSem();
     if (leer_inodo(ninodo, &inodo) == FALLO) {
         // Control de errores
-        fprintf(stderr, "Error al leer inodo (mi_read_f)\n");
+        fprintf(stderr, "Error al leer inodo\n");
         return leidos;
     }
+    inodo.atime = time(NULL);
+    if (escribir_inodo(ninodo, &inodo) == FALLO) {
+        // Control de errores
+        fprintf(stderr, "Error al escribir inodo\n");
+        return leidos;
+    }
+    mi_signalSem();
+
     // Verificación de permisos (tienen que coincidir con 100, 101, 110 o 111, es decir, tiene que estar el bit más significativo a 1)
     if ((inodo.permisos & 4) != 4) { // Interesa detectar el valor 1XX, entonces basta hacer una AND con el número 4 en binario (100)
         fprintf(stderr, "Error: el inodo no tiene permisos de lectura (mi_read_f)\n");
