@@ -4,6 +4,13 @@ unsigned char buf[BLOCKSIZE];
 
 int main(int argc, char **argv) {
     char *nombreDisco = argv[1];
+
+    unsigned int tamDV = atoi(argv[2])*BLOCKSIZE;
+    FILE *fp = fopen(argv[1], "w");
+    fseek(fp, tamDV - 1, SEEK_SET);
+    fputc('\0', fp); 
+    fclose(fp);
+
     // Montamos el dispositivo virtual
     int descriptor = bmount(nombreDisco);
     int nBloques = atoi(argv[2]);

@@ -9,6 +9,7 @@
 #include <errno.h>  //errno
 #include <string.h> // strerror()
 #include "semaforo_mutex_posix.h"
+#include <sys/mman.h> // mmap(), munmap()
 
 
 #define BLOCKSIZE 1024 // bytes
@@ -26,10 +27,12 @@
 #define DEBUGN7 0
 #define DEBUGN8 1
 #define DEBUGN12 1
+#define DEBUGN13 1
 
 int bmount(const char *camino);
 int bumount();
 int bwrite(unsigned int nbloque, const void *buf);
 int bread(unsigned int nbloque, void *buf);
+void *do_mmap(int fd);
 void mi_waitSem();
 void mi_signalSem();

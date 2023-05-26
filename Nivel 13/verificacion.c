@@ -14,6 +14,11 @@ int main (int argc, char **argv) {
 
     struct STAT p_stat;
     mi_stat(argv[2], &p_stat);
+
+#if DEBUGN13
+    fprintf(stderr, "Directorio de simulación: %s\n", argv[2]);
+#endif
+
     int numEntradas = p_stat.tamEnBytesLog / sizeof(struct entrada);
 
     // Si numentradas != NUMPROCESOS  entonces ERROR
@@ -21,6 +26,10 @@ int main (int argc, char **argv) {
         fprintf(stderr, "Error: el número de entradas no coincide con el número de procesos\n");
         return FALLO;
     }
+
+#if DEBUGN13
+    fprintf(stderr, "numentradas: %i, NUMPROCESOS: %i\n", numEntradas, NUMPROCESOS);
+#endif
 
     char informetxt[100];
     sprintf(informetxt, "%s%s", argv[2], "informe.txt");
@@ -90,6 +99,10 @@ int main (int argc, char **argv) {
             memset(buffer_escrituras, 0, sizeof(buffer_escrituras));
             offset += sizeof(buffer_escrituras);
         }
+
+#if DEBUGN13
+        fprintf(stderr, "[%i) %i escrituras validadas en %s]\n", nEntrada + 1, info.nEscrituras, ficheroPrueba);
+#endif
 
         //Añadimos la informacion del struct info en el fichero
         
