@@ -399,14 +399,14 @@ int obtener_nRangoBL (struct inodo *inodo, unsigned int nblogico, unsigned int *
     }
 }
 
-int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned char reservar){
+int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned char reservar) {
     struct inodo inodo;
     unsigned int ptr, ptr_ant;
     int indice, nRangoBL, nivel_punteros;
     int inodoModificado = 0;
     unsigned int buffer[NPUNTEROS];
 
-    if(leer_inodo(ninodo, &inodo) == FALLO){
+    if (leer_inodo(ninodo, &inodo) == FALLO) {
         return FALLO;
     }
     
@@ -440,12 +440,17 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
 #if DEBUGN4
                     printf("[traducir_bloque_inodo()→ inodo.punteros_nivel%i[%i] = %i (reservado BF %i para punteros_nivel%i)]\n", nivel_punteros + 1, indice, ptr, ptr, nivel_punteros);
 #endif                    
-                    bwrite(ptr_ant, buffer);
-                }    
+                    if (bwrite(ptr_ant, buffer) == FALLO) {
+                        fprintf(stderr, "Error de escritura\n");
+                        return FALLO;
+                    }
+                }
                 memset(buffer,0,BLOCKSIZE);
             }
-        } else {
-            bread(ptr, buffer);
+        }
+        if (bread(ptr, buffer) == FALLO) {
+            fprintf(stderr, "Error de lectura\n");
+            return FALLO;
         }
         indice = obtener_indice(nblogico, nivel_punteros);
         ptr_ant = ptr;
@@ -457,27 +462,30 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
     if (ptr == 0) {
         if (reservar == 0) {
             return FALLO;
-        } else{
+        } else {
             ptr = reservar_bloque();
             inodoModificado = 1;
             inodo.numBloquesOcupados++;
             inodo.ctime = time(NULL);
-            if (nRangoBL == 0){
+            if (nRangoBL == 0) {
                 inodo.punterosDirectos[nblogico] = ptr;
 #if DEBUGN4
                 printf("[traducir_bloque_inodo()→ inodo.punterosDirectos[%i] = %i (reservado BF %i para BL %i)]\n", nblogico, ptr, ptr, nblogico);
 #endif
-            }else {
+            } else {
                 buffer[indice] = ptr;
 #if DEBUGN4
                 printf("[traducir_bloque_inodo()→ inodo.punteros_nivel1[%i] = %i (reservado BF %i para BL %i)]\n", indice, ptr, ptr, nblogico);
 #endif
-                bwrite(ptr_ant, buffer);
+                if (bwrite(ptr_ant, buffer) == FALLO) {
+                    fprintf(stderr, "Error de escritura\n");
+                    return FALLO;
+                }
             }
         }
     }
-    if(inodoModificado){
-        if(escribir_inodo(ninodo, &inodo) == FALLO){
+    if (inodoModificado) {
+        if (escribir_inodo(ninodo, &inodo) == FALLO) {
             return FALLO;
         }
     }
@@ -574,6 +582,9 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
     int indices[3]; 
     // Nº de bloques liberados
     int liberados = 0; 
+    // Inicializamos a 0s
+    int nBWrites = 0;
+    int nBreads = 0;
 
     if ((inodo->tamEnBytesLog) == 0) {
         return 0; //el fichero está vacío
@@ -612,6 +623,7 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
                 if (bread(ptr, bloques_punteros[nivel_punteros - 1]) == FALLO) {
                     return FALLO;
                 }
+                nBreads++;
             }
             
             ptr_nivel[nivel_punteros - 1] = ptr;
@@ -659,6 +671,7 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
                         if (bwrite(ptr, bloques_punteros[nivel_punteros - 1])==FALLO) {
                             return FALLO;//control de errores
                         }
+                        nBWrites++;
 
                         // Hemos de salir del bucle ya que no será necesario liberar los bloques de niveles
                         // superiores de los que cuelga
@@ -668,11 +681,12 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
             }
         } else {
             // AQUI QUIZAS FALLA ALGO
+            return FALLO;
         }
     }
 
 #if DEBUGN6
-    printf("[liberar_bloques_inodo()-> total bloques liberados: %d]\n", liberados);
+    printf("[liberar_bloques_inodo()-> total bloques liberados: %d, total breads: %d, total bwrites: %d]\n", liberados, nBreads, nBWrites);
 #endif
 
     // Devuelve los bloques liberados
