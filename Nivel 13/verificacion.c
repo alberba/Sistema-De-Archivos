@@ -69,9 +69,9 @@ int main (int argc, char **argv) {
         strcat(dir_prueba, "/prueba.dat");
         
         
-        //Se podria hacer con buscar entrada, a partir del inodo que se encuentra en entrada_aux.ninodo
-        //de esa manera, funcionará aunque nos cambien el nombre "prueba.dat". Si lo de arriba funciona, es mas eficiente.
-        //buscar_entrada(entrada_aux.ninodo) le hace falta mas cosicas pero ahora no las tenemos
+        // Se podria hacer con buscar entrada, a partir del inodo que se encuentra en entrada_aux.ninodo
+        // de esa manera, funcionará aunque nos cambien el nombre "prueba.dat". Si lo de arriba funciona, es mas eficiente.
+        // buscar_entrada(entrada_aux.ninodo) le hace falta mas cosicas pero ahora no las tenemos
         
         int cant_registros_buffer_escrituras = 256; 
         struct REGISTRO buffer_escrituras [cant_registros_buffer_escrituras];
@@ -81,7 +81,7 @@ int main (int argc, char **argv) {
         int contadorEscriturasValidadas = 0;
         
         while(mi_read(dir_prueba, buffer_escrituras, nReg * sizeof(struct REGISTRO), sizeof(buffer_escrituras)) > 0 ){
-            //fprintf(stderr, "iteracion nueva del while\n");
+            // fprintf(stderr, "iteracion nueva del while\n");
             for(int nRegistro = 0; nRegistro < cant_registros_buffer_escrituras; nRegistro++){
                 
                 if(info.pid == buffer_escrituras[nRegistro].pid){ 
@@ -120,7 +120,7 @@ int main (int argc, char **argv) {
                 }
             }
 
-            nReg += cant_registros_buffer_escrituras; //Hemos leido cant_registros_buffer_escrituras
+            nReg += cant_registros_buffer_escrituras; // Hemos leido cant_registros_buffer_escrituras
             memset(buffer_escrituras, 0, sizeof(buffer_escrituras));     
             
         }
@@ -129,19 +129,18 @@ int main (int argc, char **argv) {
         fprintf(stderr, "[%i) %i escrituras validadas en %s]\n", i, contadorEscriturasValidadas, dir_prueba);
 #endif
 
-        //Añadimos la informacion del struct info en el fichero
+        // Añadimos la informacion del struct info en el fichero
         
         char buffer[BLOCKSIZE];
         memset(buffer, 0, BLOCKSIZE);
-
-
         sprintf(buffer, "PID: %d\nNúmero de escrituras: \t%d\nPrimera Escritura\t%d\t%d\t%s\nÚltima Escritura\t%d\t%d\t%s\nMenor Posición\t\t%d\t%d\t%s\nMayor Posición\t\t%d\t%d\t%s\n", 
                 info.pid, info.nEscrituras, info.PrimeraEscritura.nEscritura, info.PrimeraEscritura.nRegistro, asctime(localtime(&info.PrimeraEscritura.fecha)),
                 info.UltimaEscritura.nEscritura, info.UltimaEscritura.nRegistro, asctime(localtime(&info.UltimaEscritura.fecha)), info.MenorPosicion.nEscritura,
                 info.MenorPosicion.nRegistro, asctime(localtime(&info.MenorPosicion.fecha)), info.MayorPosicion.nEscritura, info.MayorPosicion.nRegistro, 
                 asctime(localtime(&info.MayorPosicion.fecha)));
+        
         // Añadir la información del struct info al fichero informe.txt
-        int bytesLeidos = mi_write(rutaInformeTxt, buffer, nbytes_info, BLOCKSIZE);
+        int bytesLeidos = mi_write(rutaInformeTxt, buffer, nbytes_info, strlen(buffer)*sizeof(char));
         if(bytesLeidos == FALLO){
             fprintf(stderr, "Error de escritura en el fichero informe.txt\n");
             return FALLO;
