@@ -327,7 +327,7 @@ echo
 echo -e "\x1B[38;2;17;245;120m######################################################################\x1b[0m"
 echo -e "\x1B[38;2;17;245;120mEliminamos el subdirectorio sd3 de dir3\x1b[0m"
 echo -e "\x1B[38;2;17;245;120m$ ./mi_rmdir disco /dir3/sd3/\x1b[0m"
-./mi_rmdir disco /dir3/sd3/
+./mi_rm disco /dir3/sd3/
 echo
 echo -e "\x1B[38;2;17;245;120m"
 echo "             /"

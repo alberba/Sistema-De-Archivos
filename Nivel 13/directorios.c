@@ -1,7 +1,8 @@
 #include <string.h>
 #include "directorios.h"
 
-static struct ultimaEntrada ultimaEntrada[2];
+static struct ultimaEntrada ultimaEntrada[CACHE];
+int MAXCACHE = CACHE;
 
 int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
     // Siempre se comenzará por el carácter '/'
@@ -314,21 +315,38 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
     unsigned int p_inodo = 0;
     unsigned int p_inodo_dir = 0;
     unsigned int p_entrada = 0;
+    int fin = 0;
     // se verifica si la entrada ya se ha buscado anteriormente
     // con tal de optimizar el proceso
-    if (strcmp(ultimaEntrada[0].camino, camino) == 0) {
-        p_inodo = ultimaEntrada[0].p_inodo;
-    } else { // si no se ha buscado anteriormente, se buscará ahora
-        int error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, 2);
+    for (int i = 0; i < (MAXCACHE-1) && fin == 0; i++) {
+        if (strcmp(ultimaEntrada[i].camino, camino) == 0) {
+            p_inodo = ultimaEntrada[i].p_inodo;
+            fin = 1;
+        }
+    }
+    // Si no se ha buscado anteriormente, se buscará ahora
+    if (!fin) { 
+        int error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, 4);
         if (error < EXITO) {
             mostrar_error_buscar_entrada(error);
             mi_signalSem();
             return FALLO;
         }
 
-        // se guarda la entrada por si se vuelve a buscar más tarde
-        ultimaEntrada[0].p_inodo = p_inodo;
-        strcpy(ultimaEntrada[0].camino, camino);
+        // Se comprueba que no se haya llenado la caché
+        if (MAXCACHE > 0) {
+            strcpy(ultimaEntrada[CACHE - MAXCACHE].camino, camino);
+            ultimaEntrada[CACHE - MAXCACHE].p_inodo = p_inodo;
+            MAXCACHE--;
+        } else { // Se guarda la entrada en una cola (FIFO)
+            for (int i = 0; i < (CACHE - 1); i++) {
+                strcpy(ultimaEntrada[i].camino, ultimaEntrada[i + 1].camino);
+                ultimaEntrada[i].p_inodo = ultimaEntrada[i + 1].p_inodo;
+            }
+            strcpy(ultimaEntrada[CACHE - 1].camino, camino);
+            ultimaEntrada[CACHE - 1].p_inodo = p_inodo;
+        }
+
     }
 
     int nBytesEscritos = mi_write_f(p_inodo, buf, offset, nbytes);
@@ -341,20 +359,33 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
     unsigned int p_inodo = 0;
     unsigned int p_inodo_dir = 0;
     unsigned int p_entrada = 0;
-    // se verifica si la entrada ya se ha buscado anteriormente
-    // con tal de optimizar el proceso
-    if (strcmp(ultimaEntrada[1].camino, camino) == 0) {
-        p_inodo = ultimaEntrada[1].p_inodo;
-    } else { // si no se ha buscado anteriormente, se buscará ahora
+    int fin = 0;
+    for (int i = 0; i < MAXCACHE-1 && !fin; i++) {
+        if (strcmp(ultimaEntrada[1].camino, camino) == 0) {
+            p_inodo = ultimaEntrada[1].p_inodo;
+            fin = 1;
+        }
+    }
+    if (!fin) { // si no se ha buscado anteriormente, se buscará ahora
         int error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, 4);
         if (error < EXITO) {
             mostrar_error_buscar_entrada(error);
             return FALLO;
         }
-        // se guarda la entrada por si se vuelve a buscar más tarde
-        ultimaEntrada[1].p_inodo = p_inodo;
-        strcpy(ultimaEntrada[1].camino, camino);
-    }
+        if (MAXCACHE > 0) {
+            strcpy(ultimaEntrada[CACHE - MAXCACHE].camino, camino);
+            ultimaEntrada[CACHE - MAXCACHE].p_inodo = p_inodo;
+            MAXCACHE--;
+        } else { // Se guarda la entrada en una cola (FIFO)
+            for (int i = 0; i < (CACHE - 1); i++) {
+                strcpy(ultimaEntrada[i].camino, ultimaEntrada[i + 1].camino);
+                ultimaEntrada[i].p_inodo = ultimaEntrada[i + 1].p_inodo;
+            }
+            
+            strcpy(ultimaEntrada[CACHE - 1].camino, camino);
+            ultimaEntrada[CACHE - 1].p_inodo = p_inodo;
+        }
+    } 
     int nBytesLeidos = mi_read_f(p_inodo, buf, offset, nbytes);
     return nBytesLeidos;
 }
