@@ -379,7 +379,7 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
     return posInodoReservado;
 }
 
-int obtener_nRangoBL (struct inodo *inodo, unsigned int nblogico, unsigned int *ptr){
+int obtener_nRangoBL (struct inodo *inodo, unsigned int nblogico, unsigned int *ptr) {
     if (nblogico < DIRECTOS) {
         *ptr = inodo->punterosDirectos[nblogico];
         return 0;
@@ -603,10 +603,12 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
 
     // Inicializado a 0s 
     memset (bufAux_punteros, 0, BLOCKSIZE);
+    ptr = 0;
+    
     // Hacemos un recorrido de los Bloques Logicos
     for (nBL = primerBL; nBL <= ultimoBL; nBL++) {
         // 0:D, 1:I0, 2:I1, 3:I2
-        nRangoBL = obtener_nRangoBL(inodo,nBL,&ptr);
+        nRangoBL = obtener_nRangoBL(inodo, nBL, &ptr);
 
         // Control de errores
         if (nRangoBL < 0){
@@ -615,12 +617,15 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
 
         // El nivel_punteros + alto cuelga del inodo
         nivel_punteros = nRangoBL;
+
         while (ptr > 0 && nivel_punteros > 0) {
-            indice = obtener_indice(nBL,nivel_punteros);
+            
+            indice = obtener_indice(nBL, nivel_punteros);
 
             if (indice == 0 || nBL == primerBL) {
                  // Solo hay que leer del dispositivo si no está ya cargado previamente en un buffer    
                 if (bread(ptr, bloques_punteros[nivel_punteros - 1]) == FALLO) {
+                    fprintf(stderr, "Error de lectura\n");
                     return FALLO;
                 }
                 nBreads++;
@@ -661,15 +666,17 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
                         printf("[liberar_bloques_inodo()→ liberado BF %i de punteros_nivel%i correspondiente al BL: %i]\n", ptr, nivel_punteros, nBL);
 #endif
 
-                        if(nivel_punteros == nRangoBL){
+                        if (nivel_punteros == nRangoBL) {
                             inodo->punterosIndirectos[nRangoBL - 1] = 0;
                         }
 
                         nivel_punteros++;
                     } else {
                         // Escribimos en el dispositivo el bloque de punteros modificado
-                        if (bwrite(ptr, bloques_punteros[nivel_punteros - 1])==FALLO) {
-                            return FALLO;//control de errores
+                        if (bwrite(ptr, bloques_punteros[nivel_punteros - 1]) == FALLO) {
+                            // Control de errores
+                            fprintf(stderr, "Error de escritura\n");
+                            return FALLO;
                         }
                         nBWrites++;
 
@@ -679,9 +686,6 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
                     }
                 }
             }
-        } else {
-            // AQUI QUIZAS FALLA ALGO
-            return FALLO;
         }
     }
 
