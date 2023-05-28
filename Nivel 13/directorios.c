@@ -227,20 +227,24 @@ int mi_dir(const char *camino, char *buffer) {
         }
 
         // Tipo
-        if(inodo.tipo == 'd'){
+        if(inodo.tipo == 'd') {
+            strcat(buffer, YELLOW);
             strcat(buffer, "d");
         } else {
+            strcat(buffer, LRED);
             strcat(buffer, "f");
         }
         strcat(buffer, "\t");
 
         // Permisos
+        strcat(buffer, CYAN);
         if (inodo.permisos & 4) strcat(buffer, "r"); else strcat(buffer, "-");
         if (inodo.permisos & 2) strcat(buffer, "w"); else strcat(buffer, "-");
         if (inodo.permisos & 1) strcat(buffer, "x"); else strcat(buffer, "-");
         strcat(buffer, "\t");
         
         // mtime
+        strcat(buffer, RED);
         char tmp[100];
         struct tm *tm;
         tm = localtime(&inodo.mtime);
@@ -249,13 +253,16 @@ int mi_dir(const char *camino, char *buffer) {
         strcat(buffer, "\t");
 
         // Tamaño
+        strcat(buffer, MAGENTA);
         char tamBytes[sizeof(unsigned int)];
         sprintf(tamBytes, "%d", inodo.tamEnBytesLog);
         strcat(buffer, tamBytes);
         strcat(buffer, "\t");
 
         // Nombre
+        strcat(buffer, GREEN);
         strcat(buffer, entradas[i % (BLOCKSIZE / sizeof(struct entrada))].nombre);
+        strcat(buffer, RESET);
         strcat(buffer, "\n");
 
         if(offset % (BLOCKSIZE / sizeof(struct entrada)) == 0){

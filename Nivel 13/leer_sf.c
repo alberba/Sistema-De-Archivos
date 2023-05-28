@@ -1,5 +1,7 @@
 #include "directorios.h"
 
+#define DEBUG 0
+
 void mostrar_buscar_entrada(char *camino, char reservar){
   unsigned int p_inodo_dir = 0;
   unsigned int p_inodo = 0;
@@ -160,7 +162,7 @@ int main(int argc, char **argv) {
     printf("numBloquesOcupados: %u\n", inodo.numBloquesOcupados);
 #endif
 
-#if DEBUGN4
+#if DEBUG
     struct inodo inodo;
     int inodoReservado = reservar_inodo('f',6);
     bread(posSB, &SB);
