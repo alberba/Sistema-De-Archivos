@@ -26,7 +26,7 @@
 #define DEBUGN6 0
 #define DEBUGN7 0
 #define DEBUGN8 0
-#define DEBUGN12 0
+#define DEBUGN12 1
 #define DEBUGN13 1
 
 int bmount(const char *camino);
