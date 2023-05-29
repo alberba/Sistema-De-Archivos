@@ -1,3 +1,5 @@
+// Autores: Santiago Rattenbach, Sergi Oliver y Albert Salom
+
 #include "ficheros_basico.h"
 
 unsigned char buf[BLOCKSIZE];

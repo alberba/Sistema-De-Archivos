@@ -1,3 +1,5 @@
+// Autores: Santiago Rattenbach, Sergi Oliver y Albert Salom
+
 #include "ficheros.h"
 
 int main(int argc, char **argv) {

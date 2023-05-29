@@ -1,3 +1,5 @@
+// Autores: Santiago Rattenbach, Sergi Oliver y Albert Salom
+
 #include "ficheros.h"
 int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offset, unsigned int nbytes) {
     struct inodo inodo;

@@ -1,3 +1,5 @@
+// Autores: Santiago Rattenbach, Sergi Oliver y Albert Salom
+
 #include "ficheros.h"
 
 int main(int argc, char **argv){
@@ -7,19 +9,22 @@ int main(int argc, char **argv){
     }
     int offsets[5] = {9000, 209000, 30725000, 409605000, 480000000};
 
+    // Montamos el dispositivo virtual
     if(bmount(argv[1]) == FALLO){
         fprintf(stderr, "Error al montar el dispositivo virtual\n");
         return FALLO;
     }
     
-
+    // Reservamos un inodo
     int ninodo = reservar_inodo('f',6);
 
+    // Comprobamos que se ha reservado correctamente
     if(ninodo == -1){
         fprintf(stderr, "Error al reservar el inodo\n");
         return FALLO;
     }
 
+    // Bucle para escribir en el fichero
     for(int i = 0; i < (sizeof(offsets) / sizeof(int)); i++){
         unsigned int longitud = strlen(argv[2]);
         int numBytes = mi_write_f(ninodo, argv[2], offsets[i], longitud);

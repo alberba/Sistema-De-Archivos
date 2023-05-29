@@ -1,3 +1,5 @@
+// Autores: Santiago Rattenbach, Sergi Oliver y Albert Salom
+
 // bloques.h
 
 
@@ -29,6 +31,7 @@
 #define DEBUGN12 1
 #define DEBUGN13 1
 
+// Funciones de bloques.c
 int bmount(const char *camino);
 int bumount();
 int bwrite(unsigned int nbloque, const void *buf);

@@ -1,3 +1,5 @@
+// Autores: Santiago Rattenbach, Sergi Oliver y Albert Salom
+
 #include "bloques.h"
 #include <limits.h>
 #include <time.h>
@@ -46,11 +48,6 @@ struct inodo {     // comprobar que ocupa 128 bytes haciendo un sizeof(inodo)!!!
    time_t mtime; // Fecha y hora de la última modificación de datos
    time_t ctime; // Fecha y hora de la última modificación del inodo
 
-
-   /* comprobar que el tamaño del tipo time_t para vuestra plataforma/compilador es 8:
-   printf ("sizeof time_t is: %ld\n", sizeof(time_t)); */
-
-
    unsigned int nlinks;             // Cantidad de enlaces de entradas en directorio
    unsigned int tamEnBytesLog;      // Tamaño en bytes lógicos (EOF)
    unsigned int numBloquesOcupados; // Cantidad de bloques ocupados zona de datos
@@ -83,7 +80,6 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos);
 int obtener_nRangoBL (struct inodo *inodo, unsigned int nblogico, unsigned int *ptr);
 int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned char reservar);
 int obtener_indice(unsigned int nblogico,int nivel_punteros);
-
 int liberar_inodo(unsigned int ninodo);
 int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo);
 void mostrar_buscar_entrada(char *camino, char reservar);

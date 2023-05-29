@@ -1,3 +1,5 @@
+// Autores: Santiago Rattenbach, Sergi Oliver y Albert Salom
+
 #include "bloques.h"
 #include "ficheros_basico.h"
 
@@ -17,11 +19,6 @@ struct STAT { // similar al struct inodo pero sin punteros, solo los metadatos
    time_t atime; // Fecha y hora del último acceso a datos
    time_t mtime; // Fecha y hora de la última modificación de datos
    time_t ctime; // Fecha y hora de la última modificación del inodo
-
-
-   /* comprobar que el tamaño del tipo time_t para vuestra plataforma/compilador es 8:
-   printf ("sizeof time_t is: %ld\n", sizeof(time_t)); */
-
 
    unsigned int nlinks;             // Cantidad de enlaces de entradas en directorio
    unsigned int tamEnBytesLog;      // Tamaño en bytes lógicos (EOF)

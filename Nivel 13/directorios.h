@@ -1,3 +1,5 @@
+// Autores: Santiago Rattenbach, Sergi Oliver y Albert Salom
+
 #include <string.h> 
 #include "ficheros.h"
 
@@ -22,8 +24,8 @@
 #define ERROR_ENTRADA_YA_EXISTENTE -6
 #define ERROR_NO_SE_PUEDE_CREAR_ENTRADA_EN_UN_FICHERO -7
 
-#define TAMNOMBRE 60 //tamaño del nombre de directorio o fichero, en Ext2 = 256
-#define PROFUNDIDAD 32 //profundidad máxima del árbol de directorios
+#define TAMNOMBRE 60 // Tamaño del nombre de directorio o fichero, en Ext2 = 256
+#define PROFUNDIDAD 32 // Profundidad máxima del árbol de directorios
 #define CACHE 10
 
 

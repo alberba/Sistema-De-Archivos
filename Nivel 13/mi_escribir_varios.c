@@ -1,3 +1,5 @@
+// Autores: Santiago Rattenbach, Sergi Oliver y Albert Salom
+
 #include "directorios.h"
 
 
@@ -25,10 +27,7 @@ int main(int argc, char **argv){
   char *camino = argv[2];
   //obtenemos el offset
   unsigned int offset=atoi(argv[4]);
-  //escribimos el texto
-  //fprintf(stderr, MAGENTA "camino: %s\n" RESET, camino);
-  //fprintf(stderr, MAGENTA "buffer_texto: %s\n" RESET, buffer_texto);
-  //fprintf(stderr, MAGENTA "offset: %d\n" RESET, offset);
+  
   int escritos=0;
   int varios = 10;
   fprintf(stderr, RED "longitud texto: %d\n" RESET, longitud);
@@ -37,11 +36,6 @@ int main(int argc, char **argv){
     escritos += mi_write(camino,buffer_texto,offset+BLOCKSIZE*i,longitud); 
   }
   fprintf(stderr, RED "Bytes escritos: %d\n" RESET, escritos);
-  /* Visualización del stat
-  mi_stat_f(ninodo, &stat);
-  printf("stat.tamEnBytesLog=%d\n",stat.tamEnBytesLog);
-  printf("stat.numBloquesOcupados=%d\n",stat.numBloquesOcupados);
-  */
 
   bumount();
 }
