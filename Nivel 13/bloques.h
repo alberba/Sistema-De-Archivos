@@ -28,6 +28,7 @@
 #define DEBUGN6 0
 #define DEBUGN7 0
 #define DEBUGN8 0
+#define DEBUGN9 1
 #define DEBUGN12 1
 #define DEBUGN13 1
 

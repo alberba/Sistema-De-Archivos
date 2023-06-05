@@ -26,7 +26,7 @@
 
 #define TAMNOMBRE 60 // Tamaño del nombre de directorio o fichero, en Ext2 = 256
 #define PROFUNDIDAD 32 // Profundidad máxima del árbol de directorios
-#define CACHE 10
+#define CACHE 3
 
 
 

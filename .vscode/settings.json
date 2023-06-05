@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "semaforo_mutex_posix.h": "c"
+        "semaforo_mutex_posix.h": "c",
+        "directorios.h": "c",
+        "string.h": "c",
+        "ficheros.h": "c"
     }
 }

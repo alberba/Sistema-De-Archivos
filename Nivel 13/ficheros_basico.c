@@ -407,7 +407,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
     int indice, nRangoBL, nivel_punteros;
     int inodoModificado = 0;
     unsigned int buffer[NPUNTEROS];
-
+    
     if (leer_inodo(ninodo, &inodo) == FALLO) {
         return FALLO;
     }

@@ -79,14 +79,14 @@ int main (int argc, char **argv) {
         struct REGISTRO buffer_escrituras [cant_registros_buffer_escrituras];
         memset(buffer_escrituras, 0, sizeof(buffer_escrituras)); 
 
-        int nReg = 0; // contador de registros
+        int offset = 0; // contador de registros
         int contadorEscriturasValidadas = 0;
         
-        while(mi_read(dir_prueba, buffer_escrituras, nReg * sizeof(struct REGISTRO), sizeof(buffer_escrituras)) > 0 ){
+        while (mi_read(dir_prueba, buffer_escrituras, offset, sizeof(buffer_escrituras)) > 0 ) {
             // fprintf(stderr, "iteracion nueva del while\n");
-            for(int nRegistro = 0; nRegistro < cant_registros_buffer_escrituras; nRegistro++){
+            for (int nRegistro = 0; nRegistro < cant_registros_buffer_escrituras; nRegistro++) {
                 
-                if(info.pid == buffer_escrituras[nRegistro].pid){ 
+                if (info.pid == buffer_escrituras[nRegistro].pid) { 
                     if(!contadorEscriturasValidadas){ 
                         info.PrimeraEscritura = buffer_escrituras[nRegistro];
                         info.UltimaEscritura = buffer_escrituras[nRegistro];
@@ -113,7 +113,7 @@ int main (int argc, char **argv) {
                             info.MayorPosicion = buffer_escrituras[nRegistro];
                         }
                        
-                    }   
+                    }
                     
                     contadorEscriturasValidadas++;
                     info.nEscrituras = contadorEscriturasValidadas;
@@ -122,7 +122,7 @@ int main (int argc, char **argv) {
                 }
             }
 
-            nReg += cant_registros_buffer_escrituras; // Hemos leido cant_registros_buffer_escrituras
+            offset += sizeof(buffer_escrituras); // Hemos leido cant_registros_buffer_escrituras
             memset(buffer_escrituras, 0, sizeof(buffer_escrituras));     
             
         }
@@ -132,14 +132,29 @@ int main (int argc, char **argv) {
 #endif
 
         // Añadimos la informacion del struct info en el fichero
+
+        char firstTime[50];
+        char lastTime[50];
+        char lowPosTime[50];
+        char highPosTime[50];
+        struct tm *tm;
+
+        tm = localtime(&info.PrimeraEscritura.fecha);
+        strftime(firstTime, sizeof(firstTime), "%a %Y-%m-%d %H:%M:%S", tm);
+        tm = localtime(&info.UltimaEscritura.fecha);
+        strftime(lastTime, sizeof(lastTime), "%a %Y-%m-%d %H:%M:%S", tm);
+        tm = localtime(&info.MenorPosicion.fecha);
+        strftime(lowPosTime, sizeof(lowPosTime), "%a %Y-%m-%d %H:%M:%S", tm);
+        tm = localtime(&info.MayorPosicion.fecha);
+        strftime(highPosTime, sizeof(highPosTime), "%a %Y-%m-%d %H:%M:%S", tm); 
         
         char buffer[BLOCKSIZE];
         memset(buffer, 0, BLOCKSIZE);
         sprintf(buffer, "PID: %d\nNúmero de escrituras: \t%d\nPrimera Escritura\t%d\t%d\t%s\nÚltima Escritura\t%d\t%d\t%s\nMenor Posición\t\t%d\t%d\t%s\nMayor Posición\t\t%d\t%d\t%s\n", 
-                info.pid, info.nEscrituras, info.PrimeraEscritura.nEscritura, info.PrimeraEscritura.nRegistro, asctime(localtime(&info.PrimeraEscritura.fecha)),
-                info.UltimaEscritura.nEscritura, info.UltimaEscritura.nRegistro, asctime(localtime(&info.UltimaEscritura.fecha)), info.MenorPosicion.nEscritura,
-                info.MenorPosicion.nRegistro, asctime(localtime(&info.MenorPosicion.fecha)), info.MayorPosicion.nEscritura, info.MayorPosicion.nRegistro, 
-                asctime(localtime(&info.MayorPosicion.fecha)));
+                info.pid, info.nEscrituras, info.PrimeraEscritura.nEscritura, info.PrimeraEscritura.nRegistro, firstTime,
+                info.UltimaEscritura.nEscritura, info.UltimaEscritura.nRegistro, lastTime, info.MenorPosicion.nEscritura,
+                info.MenorPosicion.nRegistro, lowPosTime, info.MayorPosicion.nEscritura, info.MayorPosicion.nRegistro, 
+                highPosTime);
         
         // Añadir la información del struct info al fichero informe.txt
         int bytesLeidos = mi_write(rutaInformeTxt, buffer, nbytes_info, strlen(buffer)*sizeof(char));

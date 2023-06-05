@@ -5,6 +5,7 @@
 
 static struct ultimaEntrada ultimaEntrada[CACHE];
 int MAXCACHE = CACHE;
+int posFIFO = 0;
 
 int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
     // Siempre se comenzará por el carácter '/'
@@ -232,11 +233,10 @@ int mi_dir(const char *camino, char *buffer) {
         }
 
         // Tipo
+        strcat(buffer, GREEN);
         if(inodo.tipo == 'd') {
-            strcat(buffer, YELLOW);
             strcat(buffer, "d");
         } else {
-            strcat(buffer, LRED);
             strcat(buffer, "f");
         }
         strcat(buffer, "\t");
@@ -265,8 +265,13 @@ int mi_dir(const char *camino, char *buffer) {
         strcat(buffer, "\t");
 
         // Nombre
-        strcat(buffer, GREEN);
-        strcat(buffer, entradas[i % (BLOCKSIZE / sizeof(struct entrada))].nombre);
+        if (inodo.tipo == 'd') {
+            strcat(buffer, YELLOW);
+            strcat(buffer, entradas[i % (BLOCKSIZE / sizeof(struct entrada))].nombre);
+        } else {
+            strcat(buffer, BLUE);
+            strcat(buffer, entradas[i % (BLOCKSIZE / sizeof(struct entrada))].nombre);
+        }
         strcat(buffer, RESET);
         strcat(buffer, "\n");
 
@@ -322,10 +327,14 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
     int fin = 0;
     // se verifica si la entrada ya se ha buscado anteriormente
     // con tal de optimizar el proceso
-    for (int i = 0; i < (MAXCACHE-1) && fin == 0; i++) {
+    for (int i = 0; i < CACHE && fin == 0; i++) {
         if (strcmp(ultimaEntrada[i].camino, camino) == 0) {
             p_inodo = ultimaEntrada[i].p_inodo;
             fin = 1;
+#if DEBUGN9
+            fprintf(stderr, "mi_write() -> Utilizamos cache[%d]: %s\n", i, ultimaEntrada[i].camino);
+            break;
+#endif
         }
     }
     // Si no se ha buscado anteriormente, se buscará ahora
@@ -342,13 +351,20 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
             strcpy(ultimaEntrada[CACHE - MAXCACHE].camino, camino);
             ultimaEntrada[CACHE - MAXCACHE].p_inodo = p_inodo;
             MAXCACHE--;
+
+#if DEBUGN9
+            fprintf(stderr, "mi_write() -> Reemplazamos cache[%d]: %s\n",(CACHE - MAXCACHE)-1, camino);
+#endif
+
+
         } else { // Se guarda la entrada en una cola (FIFO)
-            for (int i = 0; i < (CACHE - 1); i++) {
-                strcpy(ultimaEntrada[i].camino, ultimaEntrada[i + 1].camino);
-                ultimaEntrada[i].p_inodo = ultimaEntrada[i + 1].p_inodo;
-            }
-            strcpy(ultimaEntrada[CACHE - 1].camino, camino);
-            ultimaEntrada[CACHE - 1].p_inodo = p_inodo;
+            strcpy(ultimaEntrada[posFIFO].camino, camino);
+            ultimaEntrada[posFIFO].p_inodo = p_inodo;
+#if DEBUGN9
+            fprintf(stderr, "mi_write() -> Reemplazamos cache[%d]: %s\n", posFIFO, camino);
+#endif
+            posFIFO = (posFIFO + 1) % CACHE;
+
         }
 
     }
@@ -368,6 +384,9 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
         if (strcmp(ultimaEntrada[1].camino, camino) == 0) {
             p_inodo = ultimaEntrada[1].p_inodo;
             fin = 1;
+#if DEBUGN9
+            fprintf(stderr, "mi_read() -> Utilizamos cache[%d]: %s\n",(CACHE - MAXCACHE), camino);
+#endif
         }
     }
     if (!fin) { // si no se ha buscado anteriormente, se buscará ahora
@@ -380,6 +399,7 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
             strcpy(ultimaEntrada[CACHE - MAXCACHE].camino, camino);
             ultimaEntrada[CACHE - MAXCACHE].p_inodo = p_inodo;
             MAXCACHE--;
+
         } else { // Se guarda la entrada en una cola (FIFO)
             for (int i = 0; i < (CACHE - 1); i++) {
                 strcpy(ultimaEntrada[i].camino, ultimaEntrada[i + 1].camino);
@@ -388,6 +408,10 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
             
             strcpy(ultimaEntrada[CACHE - 1].camino, camino);
             ultimaEntrada[CACHE - 1].p_inodo = p_inodo;
+
+#if DEBUGN9
+            fprintf(stderr, "mi_read() -> Reemplazamos cache[%d]: %s\n",(CACHE - MAXCACHE), camino);
+#endif
         }
     } 
     int nBytesLeidos = mi_read_f(p_inodo, buf, offset, nbytes);

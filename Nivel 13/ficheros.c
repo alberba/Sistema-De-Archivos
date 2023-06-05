@@ -26,7 +26,9 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
     // Desplazamiento dentro del ultimo blouqe lógico de offset
     desp2 = (offset + nbytes-1) % BLOCKSIZE;
     
+    mi_waitSem();
     nbfisico = traducir_bloque_inodo(ninodo, primerBL, 1);
+    mi_signalSem();
     
     if (nbfisico == FALLO) {
         return FALLO;
@@ -65,7 +67,9 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
         // 2a fase: Bloques lógicos intermedios
 
         for (int i = primerBL + 1; i < ultimoBL; i++) {
+            mi_waitSem();
             nbfisico = traducir_bloque_inodo(ninodo, i, 1);
+            mi_signalSem();
             if(nbfisico == FALLO){
                 fprintf(stderr, "Error al traducir el bloque de inodos\n");
                 return FALLO;
@@ -80,7 +84,9 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
 
         // 3a fase: Bloque lógico final
         
+        mi_waitSem();
         nbfisico = traducir_bloque_inodo(ninodo, ultimoBL, 1);
+        mi_signalSem();
 
         if (nbfisico == FALLO) {
             fprintf(stderr, "Error al traducir el ultimo bloque inodo\n");
@@ -172,7 +178,9 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
     offsetInicio = offset % BLOCKSIZE;
     offsetFinal = (offset + (nbytes - 1)) % BLOCKSIZE;
     // Obtención del primer (y puede que único) bloque
+    mi_waitSem();
     nbfisico = traducir_bloque_inodo(ninodo, primerBloque, 0);
+    mi_signalSem();
 
     // LECTURA
     // Si cabe en un bloque físico
@@ -208,7 +216,9 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
         // Recorrido de bloques intermedios
         for (int i = primerBloque + 1; i < ultimoBloque;i++) {
             // Obtención del bloque i (intermedio)
+            mi_waitSem();
             nbfisico = traducir_bloque_inodo(ninodo, i, 0);
+            mi_signalSem();
             // Si no se ha devuelto -1
             if (nbfisico != FALLO) {
                 // Se lee el bloque físico
@@ -225,7 +235,9 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
         }
 
         // Obtención del último bloque
+        mi_waitSem();
         nbfisico = traducir_bloque_inodo(ninodo, ultimoBloque, 0);
+        mi_signalSem();
         // Si no se ha devuelto -1
         if (nbfisico != FALLO)
         {

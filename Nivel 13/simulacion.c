@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
                 registro.nRegistro = rand() % REGMAX; // [0, 499.999]
                 mi_write(archivoHijo, &registro, registro.nRegistro * sizeof(struct REGISTRO), sizeof(struct REGISTRO));
 #if PRUEBA
-                fprintf(stderr, "[simulación.c → Escritura %i en %s]\n", nEscritura, archivoHijo);
+                //fprintf(stderr, "[simulación.c → Escritura %i en %s]\n", nEscritura, archivoHijo);
                 fprintf(stderr, AZUL_F "registro.fecha =  %ld registro.pid = %d, registro.nEscritura = %d, registro.nRegistro = %d\n" RESET_FORMATO, registro.fecha, registro.pid, registro.nEscritura, registro.nRegistro);       
 #endif
                 usleep(50000); // Esperar 0,05s para hacer la siguiente escritura
@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
             exit(0);
             
         }
-        usleep(15000); // Esperar 0,15s para lanzar el siguiente proceso
+        usleep(150000); // Esperar 0,15s para lanzar el siguiente proceso
     }
 
     // Permitir que el padre espere por todos los hijos
