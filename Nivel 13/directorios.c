@@ -350,7 +350,7 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
         if (MAXCACHE > 0) {
             strcpy(ultimaEntrada[CACHE - MAXCACHE].camino, camino);
             ultimaEntrada[CACHE - MAXCACHE].p_inodo = p_inodo;
-            MAXCACHE--;
+            MAXCACHE--; 
  
 #if DEBUGN9
             fprintf(stderr, "mi_write() -> Reemplazamos cache[%d]: %s\n",(CACHE - MAXCACHE)-1, camino);
