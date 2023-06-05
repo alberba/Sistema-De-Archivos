@@ -356,7 +356,6 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
             fprintf(stderr, "mi_write() -> Reemplazamos cache[%d]: %s\n",(CACHE - MAXCACHE)-1, camino);
 #endif
 
-
         } else { // Se guarda la entrada en una cola (FIFO)
             strcpy(ultimaEntrada[posFIFO].camino, camino);
             ultimaEntrada[posFIFO].p_inodo = p_inodo;
